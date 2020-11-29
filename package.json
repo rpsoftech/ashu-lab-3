@@ -7,7 +7,10 @@
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "electron:dev": "electron ./electron/electron.js --dev",
+    "electron:server": "electron ./electron/electron.js --server",
+    "electron": "electron ./electron/electron.js"
   },
   "private": true,
   "dependencies": {
