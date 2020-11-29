@@ -24,6 +24,7 @@
     "@angular/router": "~11.0.2",
     "electron": "^11.0.3",
     "rxjs": "~6.6.0",
+    "sweetalert2": "^10.10.4",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"
   },
