@@ -271,6 +271,8 @@ export class ClientSock {
       this.name = name;
       GlobalData.clients[name] = GlobalData.objs[this.keysss];
       GlobalData.clientsArray.push(name);
+      this.createDirIfNotExist(this.native.path.join(GlobalData.dirPath, this.name));
+      this.AddRemoveWatcher('add',GlobalData.dirPath);
       GlobalData.serverCommandArray.push('Client Connected:' + name);
       this.WriteToUser({
         type: 0,
