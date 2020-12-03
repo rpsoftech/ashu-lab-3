@@ -27,7 +27,7 @@ export class ClientSock {
     private socket: Socket,
     private keysss: string,
     private native: NativeModules,
-    zone: NgZone
+    private zone: NgZone
   ) {
     socket.on('data', (a) => {
       zone.run(() => this.dataFromClient(a));
@@ -40,6 +40,11 @@ export class ClientSock {
     });
     this.Init();
   }
+  private AffToActiviry(a:string) {
+    this.zone.run(()=>{
+      GlobalData.serverCommandArray.push(a);
+    })
+  }
   DestroyObject(): void {
     if (this.socket.destroyed === false) {
       this.socket.destroy();
@@ -49,7 +54,7 @@ export class ClientSock {
         GlobalData.clientsArray.indexOf(this.name),
         1
       );
-      GlobalData.serverCommandArray.push('Disconnected: ' + this.name);
+      this.AffToActiviry('Disconnected: ' + this.name);
       GlobalData.clientArrayNotifier.next(1);
     }
     if (this.name && GlobalData.clients[this.name]) {
@@ -75,7 +80,7 @@ export class ClientSock {
         type: -1,
         msg: 'Sorry TimeOut..',
       });
-      GlobalData.serverCommandArray.push('Client TimeOut:', this.keysss);
+      this.AffToActiviry('Client TimeOut:'+this.keysss);
       GlobalData.clientArrayNotifier.next(1);
       this.socket.destroy();
     }, 10000);
@@ -272,8 +277,8 @@ export class ClientSock {
       GlobalData.clients[name] = GlobalData.objs[this.keysss];
       GlobalData.clientsArray.push(name);
       this.createDirIfNotExist(this.native.path.join(GlobalData.dirPath, this.name));
-      this.AddRemoveWatcher('add',GlobalData.dirPath);
-      GlobalData.serverCommandArray.push('Client Connected:' + name);
+      // this.AddRemoveWatcher('add',GlobalData.dirPath);
+      this.AffToActiviry('Client Connected:' + name);
       this.WriteToUser({
         type: 0,
         msg: 'ok',
@@ -283,7 +288,7 @@ export class ClientSock {
         type: -1,
         msg: 'Sorry User Already Exist..',
       });
-      GlobalData.serverCommandArray.push('Username Already Exist:', name);
+      this.AffToActiviry('Username Already Exist:'+name);
       this.socket.destroy();
     }
     GlobalData.clientArrayNotifier.next(1);

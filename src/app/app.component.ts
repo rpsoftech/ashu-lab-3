@@ -13,6 +13,7 @@ export class AppComponent {
   constructor(public socketservice: SocketService, private zone: NgZone) {
     socketservice.dirArrayObse.subscribe((a) => {
       if (a !== null) {
+        console.log(a);
         zone.run(() => {
           this.dirArray = a;
           this.selected = '';

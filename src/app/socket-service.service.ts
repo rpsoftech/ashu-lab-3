@@ -14,6 +14,9 @@ export interface CommunicatinMSG {
   data?: {
     [key: string]: any;
   };
+  dataArray?:{
+    [key: string]: string[];
+  }
 }
 @Injectable({
   providedIn: 'root',
@@ -27,8 +30,8 @@ export class SocketService {
   path: typeof path;
   ServerRespoObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
   ServerSendObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
-  private host: string;
-  private port: string;
+  private host: string='localhost';
+  private port: string='5000';
   patharray: string[] = [];
   dirArrayObse: BehaviorSubject<string[]> = new BehaviorSubject<string[]>(null);
   private basicPath: string = '';
@@ -73,7 +76,7 @@ export class SocketService {
             }
           });
       });
-    // this.init();
+    this.init();
     this.setObsevableLisnet();
   }
   private createDir(p: string): void {
@@ -142,9 +145,9 @@ export class SocketService {
         } else {
           this.swal.fire('Error', c.msg, 'error');
         }
-      } else if (c.type === 1) {
+      } else if (c.type === 11) {
         this.swal.fire('Success', 'Folder Is Synchronised', 'success');
-      } else if (c.type === 2) {
+      } else if (c.type === 21) {
         this.swal.fire('Success', 'Folder Is De-Synchronised', 'success');
       } else if (c.type === 'add') {
         this.createDir(
@@ -166,7 +169,7 @@ export class SocketService {
         }
         this.basicPath = a.filePaths[0];
       } else {
-        this.basicPath = '/home/keyur/Desktop/test';
+        this.basicPath = '/home/keyur/Desktop/test1';
       }
       console.log(this.basicPath);
 
@@ -287,29 +290,33 @@ export class SocketService {
   }
   async GetAndUpdateArray(): Promise<void> {
     this.ServerSendObse.next({
-      type: 5,
+      type: 51,
       msg: '',
     });
     const l = await this.ServerRespoObse.pipe(first()).toPromise();
+    console.log(l);
+    
     this.dirArrayObse.next(l.msg as any);
   }
   async DeSync(p: string): Promise<void> {
     this.ServerSendObse.next({
-      type: 2,
+      type: 21,
       msg: p,
     });
     await this.ServerRespoObse.pipe(first()).toPromise();
     this.deleteFolderRecursive(this.path.join(this.basicPath, p));
   }
   async AddToSync(p: string): Promise<void> {
-    this.createDir(this.path.join(this.basicPath, p));
+    const p1 = this.path.join(this.basicPath, p);
+    this.deleteFolderRecursive(p1)
+    this.createDir(p1);
     this.ServerSendObse.next({
-      type: 1,
+      type: 11,
       msg: p,
     });
     await this.ServerRespoObse.pipe(first()).toPromise();
     this.ServerSendObse.next({
-      type: 5,
+      type: 51,
       msg: p,
     });
     const a = await this.ServerRespoObse.pipe(first()).toPromise();

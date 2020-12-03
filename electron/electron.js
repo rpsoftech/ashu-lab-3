@@ -26,7 +26,11 @@ function createWindow() {
 
   // and load the index.html of the app.
   if (isDEv) {
-    mainWindow.loadURL("http://localhost:4200");
+    if(server){
+      mainWindow.loadURL("http://localhost:4201");
+    }else{
+      mainWindow.loadURL("http://localhost:4200");
+    }
     mainWindow.webContents.openDevTools();
   } else {
     if(server){

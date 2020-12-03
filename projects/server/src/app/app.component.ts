@@ -10,12 +10,9 @@ export class AppComponent {
   array = GlobalData.clientsArray;
   commandArray=GlobalData.serverCommandArray;
   constructor(public ss: ServerService, private cd: ChangeDetectorRef) {
-    setInterval(()=>{
-      console.log(this.commandArray);
-    },2000)
     // this.commandArray = ['asda','asdasd','asdad','dfghjkl;','fghjkliuyhgfghjk','rtyhujkl','rtyujiolp;','fghjkl;']
     GlobalData.clientArrayNotifier.subscribe(()=>{
-      cd.detectChanges();
+      // cd.detectChanges();
     })
   }
   close() {
