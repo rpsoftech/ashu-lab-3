@@ -32,7 +32,7 @@
           <div class="but" (click)="syncServer = true" [class.selected]="syncServer">Sync Server</div>
           <div class="but" (click)="syncServer = false" [class.selected]="!syncServer" >Dir Server</div>
         </div>
-    <div class="folder_container">
+    <div class="folder_container" [hidden]="syncServer === false">
       <div class="dir_list">
         <div class="no_dir" *ngIf="dirArray.length === 0">
           <img src="./assets/folder-svgrepo-com.svg" />
@@ -80,6 +80,45 @@
         </div>
         <div class="commands_message" *ngIf="!show">
           <span>Please,Select Any Dir First..!!</span>
+        </div>
+      </div>
+    </div>
+    <div class="folder_container" [hidden]="syncServer === true">
+      <div class="dir_list">
+        <div class="no_dir" *ngIf="dirArray.length === 0">
+          <img src="./assets/folder-svgrepo-com.svg" />
+          <span>No Dir Found</span>
+        </div>
+        <div
+          class="dir"
+          [class.select]="selected === d"
+          (dblclick)="doubleselectDir(d)"
+          (click)="singleClick(d)"
+          *ngFor="let d of dirArray"
+        >
+          <div class="img_dir">
+            <img src="./assets/folder-svgrepo-com.svg" />
+          </div>
+          <div class="name">
+            {{ d }}
+          </div>
+        </div>
+      </div>
+      <div class="commands">
+        <h3>Commands To Perform</h3>
+        <div class="commands_list">
+          <span (click)="CreateDir()">F1. Create Dir</span>
+          <span (click)="Rename()">F2 Rename Dir</span>
+          <span (click)="Move()" [hidden]="movePath !== ''">F3. Move Dir</span>
+          <span (click)="Move()" [hidden]="movePath === ''">F3. Move Here</span>
+          <span (click)="Delete()">F4. Delete Dir</span>
+          <span (click)="socketservice.GetAndUpdateArray()">F5. Fetch Dir</span>
+          <span [hidden]="movePath === ''" (click)="movePath = ''"
+            >F6. Clear Move select</span
+          >
+        </div>
+        <div class="move_path" [hidden]="movePath === ''">
+          selected dir path:- /{{ movePath }}
         </div>
       </div>
     </div>

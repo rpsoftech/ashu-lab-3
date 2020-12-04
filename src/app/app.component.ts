@@ -8,6 +8,7 @@ import { SocketService } from './socket-service.service';
 export class AppComponent {
   selected = '';
   show = false;
+  movePath = '';
   syncServer=false;
   dirArray: string[] = [];
   watchDirArray: string[] = [];
@@ -23,11 +24,7 @@ export class AppComponent {
       }
     });
   }
-  singleClick(d: string) {
-    this.selected = this.selected === d ? '' : d;
-    this.show = this.selected === '' ? false : true;
-    // this.cd.detectChanges();
-  }
+
   AddYoSync(a: string): void {
     this.watchDirArray.push(a);
     this.socketservice.AddToSync(a);
@@ -52,5 +49,98 @@ export class AppComponent {
           this.socketservice.close();
         }
       });
+  }
+  singleClick(d: string) {
+    this.selected = this.selected === d ? '' : d;
+    // this.cd.detectChanges();
+  }
+  doubleselectDir(a: string) {
+    this.socketservice.patharray.push(a);
+    this.socketservice.GetAndUpdateArray();
+  }
+  async CreateDir(): Promise<void> {
+    const r = await this.socketservice.swal.fire({
+      title: 'Please Enter Dir Name',
+      input: 'text',
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Create',
+    });
+    if (r.isConfirmed && r.value) {
+      this.socketservice.Create(
+        this.socketservice.path.join(this.getJoinPath(), r.value)
+      );
+    }
+  }
+  private getJoinPath(): string {
+    return this.socketservice.path.join(...this.socketservice.patharray);
+  }
+  async Rename(): Promise<void> {
+    if (this.selected === '') {
+      this.socketservice.swal.fire(
+        'Error',
+        'Please Select Dir First,To Rename',
+        'error'
+      );
+    } else {
+      const r = await this.socketservice.swal.fire({
+        title: 'Please Enter New Dir Name',
+        input: 'text',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Create',
+      });
+      if (r.isConfirmed && r.value) {
+        this.socketservice.ServerSendObse.next({
+          type: 3,
+          data: {
+            source: this.socketservice.path.join(
+              this.getJoinPath(),
+              this.selected
+            ),
+            target: r.value,
+          },
+        });
+      }
+    }
+  }
+  Move(): void {
+    if (this.selected === '' && this.movePath === '') {
+      this.socketservice.swal.fire(
+        'Error',
+        'Please Select Dir First,To Rename',
+        'error'
+      );
+    } else if (this.movePath === '') {
+      this.movePath = this.socketservice.path.join(
+        this.getJoinPath(),
+        this.selected
+      );
+    } else {
+      console.log(this.movePath);
+      this.socketservice.ServerSendObse.next({
+        type: 2,
+        data: {
+          source: this.movePath,
+          target: this.getJoinPath(),
+        },
+      });
+      this.movePath = '';
+    }
+  }
+  async Delete(): Promise<void> {
+    if (this.selected === '') {
+      this.socketservice.swal.fire(
+        'Error',
+        'Please Select Dir First,To Delete',
+        'error'
+      );
+    } else {
+      const c = this.socketservice.path.join(this.getJoinPath(), this.selected);
+      this.socketservice.ServerSendObse.next({
+        type: 4,
+        msg: c,
+      });
+    }
   }
 }

@@ -18,7 +18,7 @@ export class ServerService {
   private port = 5000;
   private server: Server;
   private Fswatcher: FSWatcher;
-  private host = '127.0.0.1';
+  private host = '';
   ServerStarted = false;
   native: NativeModules;
   constructor(private zone: NgZone) {
@@ -125,7 +125,7 @@ export class ServerService {
       if (this.ServerStarted === false) {
         this.server = this.native.netObj
           .createServer((s) => this.OnClientConnect(s))
-          .listen(this.port, this.host, () => {
+          .listen(5000,'192.168.1.74',() => {
             console.log('started');
             this.ServerStarted = true;
             resolve();

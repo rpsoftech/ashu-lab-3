@@ -83,6 +83,12 @@ export class SocketService {
     console.log(p);
     this.fs.mkdirSync(p);
   }
+  Create(path1: string): void {
+    this.ServerSendObse.next({
+      type: 1,
+      msg: path1,
+    });
+  }
   private deleteFolderRecursive(path1: string, deletecurrent = true): void {
     if (this.fs.existsSync(path1)) {
       this.fs.readdirSync(path1).forEach((file) => {
