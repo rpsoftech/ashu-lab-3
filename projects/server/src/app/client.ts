@@ -276,7 +276,7 @@ export class ClientSock {
         type: 101,
         data: this.UndoTasks,
       });
-    },200);
+    }, 200);
   }
   private ValidateUserWithName(name: string): void {
     if (typeof GlobalData.clients[name] === 'undefined') {
@@ -308,15 +308,14 @@ export class ClientSock {
     path1: string,
     dir: string
   ): void {
-    this.socket.write(
-      JSON.stringify({
-        type: type1,
-        data: {
-          path: path1,
-          watch: dir,
-        },
-      })
-    );
+    const c = {
+      type: type1,
+      data: {
+        path: path1,
+        watch: dir,
+      },
+    };
+    this.socket.write(JSON.stringify(c));
   }
   private MoveDir(m: {
     data: {

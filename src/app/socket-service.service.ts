@@ -30,8 +30,8 @@ export class SocketService {
   path: typeof path;
   ServerRespoObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
   ServerSendObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
-  private host: string;
-  private port:number;
+  private host: string = 'localhost';
+  private port: number = 5000;
   patharray: string[] = [];
   dirArrayObse: BehaviorSubject<string[]> = new BehaviorSubject<string[]>(null);
   dirArrayObseSyncServer: BehaviorSubject<string[]> = new BehaviorSubject<
@@ -54,10 +54,12 @@ export class SocketService {
     this.socket
       .on('data', (a) => {
         try {
-          console.log(a.toString());
-          const c = JSON.parse(a.toString());
-          console.log(c);
-          this.ServerRespoObse.next(c);
+          const c1 = a.toString().replace(/}{/gm, '}@@{').split('@@');
+          console.log(c1);
+          c1.forEach((a11) => {
+            const c = JSON.parse(a11.toString());
+            this.ServerRespoObse.next(c);
+          });
         } catch (e) {
           console.log(e);
         }
@@ -161,10 +163,13 @@ export class SocketService {
       } else if (c.type === 21) {
         this.swal.fire('Success', 'Folder Is De-Synchronised', 'success');
       } else if (c.type === 'add') {
+        console.log(c);
         this.createDir(
           this.path.join(this.basicPath, c.data.watch, c.data.path)
         );
       } else if (c.type === 'delete') {
+        console.log(c);
+
         this.deleteFolderRecursive(
           this.path.join(this.basicPath, c.data.watch, c.data.path)
         );
