@@ -11,11 +11,11 @@ export class AppComponent {
   movePath = '';
   syncServer=false;
   dirArray: string[] = [];
+  dirArraySync:string[] = [];
   watchDirArray: string[] = [];
   constructor(public socketservice: SocketService, private zone: NgZone) {
     socketservice.dirArrayObse.subscribe((a) => {
       if (a !== null) {
-        console.log(a);
         zone.run(() => {
           this.dirArray = a;
           this.selected = '';
@@ -23,8 +23,23 @@ export class AppComponent {
         // this.cd.detectChanges();
       }
     });
+    socketservice.dirArrayObseSyncServer.subscribe((a) => {
+      if (a !== null) {
+        zone.run(() => {
+          this.dirArraySync = a;
+          this.selected = '';
+        });
+        // this.cd.detectChanges();
+      }
+    });
   }
-
+  refresh(){
+    if(this.syncServer){
+      this.socketservice.GetAndUpdateArray();
+    }else{
+      this.socketservice.GetAndUpdateArrayLab1();
+    }
+  }
   AddYoSync(a: string): void {
     this.watchDirArray.push(a);
     this.socketservice.AddToSync(a);
@@ -56,7 +71,7 @@ export class AppComponent {
   }
   doubleselectDir(a: string) {
     this.socketservice.patharray.push(a);
-    this.socketservice.GetAndUpdateArray();
+    this.socketservice.GetAndUpdateArrayLab1();
   }
   async CreateDir(): Promise<void> {
     const r = await this.socketservice.swal.fire({

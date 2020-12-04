@@ -31,9 +31,10 @@ export class SocketService {
   ServerRespoObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
   ServerSendObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
   private host: string='192.168.1.74';
-  private port: string='5000';
+  private port=5000;
   patharray: string[] = [];
   dirArrayObse: BehaviorSubject<string[]> = new BehaviorSubject<string[]>(null);
+  dirArrayObseSyncServer: BehaviorSubject<string[]> = new BehaviorSubject<string[]>(null);
   private basicPath: string = '';
   name = '';
   private netObj: typeof net;
@@ -175,7 +176,7 @@ export class SocketService {
         }
         this.basicPath = a.filePaths[0];
       } else {
-        this.basicPath = '/home/keyur/Desktop/test1';
+        this.basicPath = '/Users/gusec/Desktop/test1';
       }
       console.log(this.basicPath);
 
@@ -202,13 +203,13 @@ export class SocketService {
             throw new Error('Please Enter Valid Port Number');
           }
           this.host = result.value[0];
-          this.port = result.value[1];
+          this.port = +result.value[1];
         }
       }
       this.socket.connect(5000,'192.168.1.74', () => {}).once('error',console.log);
       const t = setTimeout(() => {
         this.swal.fire('Error', 'Something went Wrong', 'error').then(() => {
-          // this.DestroyObj();
+          this.DestroyObj();
         });
       }, 11000);
       const c = await this.ServerRespoObse.pipe(first()).toPromise();
@@ -240,6 +241,7 @@ export class SocketService {
             clearInterval(timerInterval);
           },
         });
+
         this.name = name.value;
         if (name.value) {
           this.ServerSendObse.next({
@@ -255,7 +257,8 @@ export class SocketService {
         });
       }
       await this.ServerRespoObse.pipe(first()).toPromise();
-      this.GetAndUpdateArray();
+      await this.GetAndUpdateArray();
+      this.GetAndUpdateArrayLab1();
       // this.socket.connect(5000, 'localhost', () => {
       //   console.log('asdasd');
 
@@ -295,14 +298,24 @@ export class SocketService {
     }
   }
   async GetAndUpdateArray(): Promise<void> {
+    
     this.ServerSendObse.next({
       type: 51,
       msg: '',
     });
-    const l = await this.ServerRespoObse.pipe(first()).toPromise();
-    console.log(l);
+    const l = await this.ServerRespoObse.pipe(first()).toPromise(); 
     
-    this.dirArrayObse.next(l.msg as any);
+      this.dirArrayObseSyncServer.next(
+        l.msg as any
+      )
+  }
+  async GetAndUpdateArrayLab1(){
+    this.ServerSendObse.next({
+      type: 5,
+      msg: this.patharray.length > 0 ? this.patharray.join(this.path.sep):'',
+    });
+    const l = await this.ServerRespoObse.pipe(first()).toPromise(); 
+      this.dirArrayObse.next(l.dataArray.dir)
   }
   async DeSync(p: string): Promise<void> {
     this.ServerSendObse.next({
@@ -332,8 +345,8 @@ export class SocketService {
     });
   }
   close(): void {
-    if (Array.isArray(this.dirArrayObse.value)) {
-      this.dirArrayObse.value.forEach((a) => {
+    if (Array.isArray(this.dirArrayObseSyncServer.value)) {
+      this.dirArrayObseSyncServer.value.forEach((a) => {
         this.deleteFolderRecursive(this.path.join(this.basicPath, a));
       });
     }

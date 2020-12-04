@@ -10,7 +10,7 @@
       <div class="border"></div>
     </div>
     <div class="path_container">
-      <div class="refresh" (click)="socketservice.GetAndUpdateArray()">
+      <div class="refresh" (click)="refresh()">
         <span>Refresh List:</span>
         <img src="./assets/refresh.svg" />
       </div>
@@ -34,7 +34,7 @@
         </div>
     <div class="folder_container" [class.hide]="syncServer == false">
       <div class="dir_list">
-        <div class="no_dir" *ngIf="dirArray.length === 0">
+        <div class="no_dir" *ngIf="dirArraySync.length === 0">
           <img src="./assets/folder-svgrepo-com.svg" />
           <span>No Dir Found</span>
         </div>
@@ -42,7 +42,7 @@
           class="dir"
           [class.select]="selected === d"
           (click)="singleClick(d)"
-          *ngFor="let d of dirArray"
+          *ngFor="let d of dirArraySync"
         >
           <div class="img_dir">
             <img src="./assets/folder-svgrepo-com.svg" />
@@ -83,7 +83,6 @@
         </div>
       </div>
     </div>
-    {{syncServer}}
     <div class="folder_container" [class.hide]="syncServer == true">
       <div class="dir_list">
         <div class="no_dir" *ngIf="dirArray.length === 0">
