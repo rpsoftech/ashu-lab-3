@@ -355,7 +355,7 @@ export class ClientSock {
       // For Moving Dir Just Changing Path Of the Folder
       this.native.fs.renameSync(
         this.GetPath(m.data.source),
-        this.native.path.join('/', ...t)
+        this.native.path.join( ...t)
       );
       this.WriteToUser({
         type: 2,
@@ -408,7 +408,7 @@ export class ClientSock {
       s = s.filter((a) => a !== '');
       this.native.fs.renameSync(
         this.GetPath(m.data.source),
-        this.native.path.join('/', ...s)
+        this.native.path.join(...s)
       );
       this.WriteToUser({
         type: 3,

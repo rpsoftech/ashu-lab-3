@@ -12,7 +12,7 @@ function createWindow() {
     center: true,
     // minimizable:false,
     // maximizable:false,
-    frame: false,
+    // frame: false,
     // titleBarStyle:"default",
     webPreferences: {
       nodeIntegration: true, // is default value after Electron v5
