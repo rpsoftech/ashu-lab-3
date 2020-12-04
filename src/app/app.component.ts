@@ -33,6 +33,12 @@ export class AppComponent {
       }
     });
   }
+  PathClicked(i:number){
+    if(this.syncServer){
+      return;
+    }
+    this.socketservice.PathArrayClicked(i);
+  }
   refresh(){
     if(this.syncServer){
       this.socketservice.GetAndUpdateArray();

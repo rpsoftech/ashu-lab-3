@@ -18,10 +18,10 @@
         <span>Path:</span>
       </div>
       <div class="path_list">
-        <span class="path_name"> / </span>
+        <span class="path_name" (click)="PathClicked(-1)" > / </span>
         <span class="next">></span>
         <span *ngFor="let path of socketservice.patharray; let i = index">
-          <span class="path_name">
+          <span class="path_name" (click)="PathClicked(i)">
             {{ path }}
           </span>
           <span class="next">></span>

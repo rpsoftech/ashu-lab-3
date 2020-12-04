@@ -305,6 +305,14 @@ export class SocketService {
         });
     }
   }
+  PathArrayClicked(i: number): void {
+    if (i === -1) {
+      this.patharray = [];
+    } else if (i + 1 < this.patharray.length) {
+      this.patharray.splice(i + 1, this.patharray.length - i);
+    }
+    this.GetAndUpdateArrayLab1();
+  }
   async GetAndUpdateArray(): Promise<void> {
     
     this.ServerSendObse.next({
