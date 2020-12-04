@@ -9,9 +9,9 @@ export interface CommunicatinMSG {
   data?: {
     [key: string]: string;
   };
-  dataArray?:{
+  dataArray?: {
     [key: string]: string[];
-  }
+  };
 }
 export class ClientSock {
   private name = '';
@@ -40,10 +40,10 @@ export class ClientSock {
     });
     this.Init();
   }
-  private AffToActiviry(a:string) {
-    this.zone.run(()=>{
+  private AffToActiviry(a: string) {
+    this.zone.run(() => {
       GlobalData.serverCommandArray.push(a);
-    })
+    });
   }
   DestroyObject(): void {
     if (this.socket.destroyed === false) {
@@ -80,7 +80,7 @@ export class ClientSock {
         type: -1,
         msg: 'Sorry TimeOut..',
       });
-      this.AffToActiviry('Client TimeOut:'+this.keysss);
+      this.AffToActiviry('Client TimeOut:' + this.keysss);
       GlobalData.clientArrayNotifier.next(1);
       this.socket.destroy();
     }, 10000);
@@ -120,33 +120,36 @@ export class ClientSock {
 
   private async dataFromClient(d: Buffer): Promise<void> {
     try {
+      console.log(d.toString());
+
       const m: CommunicatinMSG = JSON.parse(d.toString());
       if (m.type === 0) {
         this.ValidateUserWithName(m.msg);
       } else if (m.type === 11) {
-        const path = this.GetPath(m.msg);
+        const path = this.GetPath(m.msg, false);
         this.AddRemoveWatcher('add', path);
         this.WriteToUser({
           type: m.type,
           msg: 'ok',
         });
       } else if (m.type === 21) {
-        const path = this.GetPath(m.msg);
+        const path = this.GetPath(m.msg, false);
         this.AddRemoveWatcher('delete', path);
         this.WriteToUser({
           type: m.type,
           msg: 'ok',
         });
-      } else if (m.type === 51) {
+      } else if (m.type === 51 || m.type === 61) {
         this.WriteToUser({
-          type: 51,
-          msg: this.native.getDirectories(this.GetPath(m.msg)),
+          type: m.type,
+          msg: this.native.getDirectories(this.GetPath(m.msg, false)),
         });
       } else if (m.type === 1) {
         console.log('Create:', this.name, ':', m.msg);
         if (m.msg && this.ValidateDirName(m.msg)) {
-
-          const c = this.createDirIfNotExist(this.GetPath(this.native.path.join(this.name,m.msg)));
+          const c = this.createDirIfNotExist(
+            this.GetPath(this.native.path.join(this.name, m.msg))
+          );
           if (c) {
             this.WriteToUser({
               type: -2,
@@ -204,7 +207,7 @@ export class ClientSock {
           // For Moving Dir Just Changing Path Of the Folder
           this.native.fs.renameSync(
             this.GetPath(m.data.source),
-            this.native.path.join(...t)
+            this.native.path.join('/',...t)
           );
           this.WriteToUser({
             type: 2,
@@ -242,10 +245,14 @@ export class ClientSock {
           ) {
             throw new Error('Please Target Dir Not Exist');
           }
-          const s = this.GetPath(m.data.source).split(this.native.path.sep);
+          let s = this.GetPath(m.data.source).split(this.native.path.sep);
           const t = m.data.target.split(this.native.path.sep);
           s[s.length - 1] = t[t.length - 1];
-          this.native.fs.renameSync(this.GetPath(m.data.source), this.native.path.join(...s));
+          s = s.filter(a=>a !== '');
+          this.native.fs.renameSync(
+            this.GetPath(m.data.source),
+            this.native.path.join('/',...s)
+          );
           this.WriteToUser({
             type: 3,
             msg: `${m.data.source} Successfully Renamed to ${m.data.target}`,
@@ -277,7 +284,9 @@ export class ClientSock {
       this.name = name;
       GlobalData.clients[name] = GlobalData.objs[this.keysss];
       GlobalData.clientsArray.push(name);
-      this.createDirIfNotExist(this.native.path.join(GlobalData.dirPath, this.name));
+      this.createDirIfNotExist(
+        this.native.path.join(GlobalData.dirPath, this.name)
+      );
       // this.AddRemoveWatcher('add',GlobalData.dirPath);
       this.AffToActiviry('Client Connected:' + name);
       this.WriteToUser({
@@ -289,7 +298,7 @@ export class ClientSock {
         type: -1,
         msg: 'Sorry User Already Exist..',
       });
-      this.AffToActiviry('Username Already Exist:'+name);
+      this.AffToActiviry('Username Already Exist:' + name);
       this.socket.destroy();
     }
     GlobalData.clientArrayNotifier.next(1);
@@ -310,8 +319,12 @@ export class ClientSock {
       })
     );
   }
-  private GetPath(dir: string): string {
-    return this.native.path.join(GlobalData.dirPath, dir);
+  private GetPath(dir: string, addname = true): string {
+    return this.native.path.join(
+      GlobalData.dirPath,
+      addname ? this.name : '',
+      dir
+    );
   }
   private deleteFolderRecursive(path: string) {
     if (this.native.fs.existsSync(path)) {
