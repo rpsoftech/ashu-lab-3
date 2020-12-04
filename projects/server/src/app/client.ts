@@ -145,7 +145,8 @@ export class ClientSock {
       } else if (m.type === 1) {
         console.log('Create:', this.name, ':', m.msg);
         if (m.msg && this.ValidateDirName(m.msg)) {
-          const c = this.createDirIfNotExist(this.GetPath(m.msg));
+
+          const c = this.createDirIfNotExist(this.GetPath(this.native.path.join(this.name,m.msg)));
           if (c) {
             this.WriteToUser({
               type: -2,

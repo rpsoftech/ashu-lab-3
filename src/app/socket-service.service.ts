@@ -164,6 +164,14 @@ export class SocketService {
         this.deleteFolderRecursive(
           this.path.join(this.basicPath, c.data.watch, c.data.path)
         );
+      }else if (c.type === 51) {
+        this.dirArrayObseSyncServer.next(c.msg as any);
+      }
+       else if (c.type === 5) {
+        this.dirArrayObse.next(c.dataArray.dir);
+      } else if (c.type === 1 || c.type === 4 || c.type === 3 || c.type === 2) {
+        this.swal.fire('Success', c.msg, 'success');
+        this.GetAndUpdateArrayLab1();
       }
     });
   }
