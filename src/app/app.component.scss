@@ -51,12 +51,12 @@
             align-items: center;
             padding: 10px;
             &:hover{
-              transition: all ease .5s;
+              transition: all ease .7s;
               background: black;
               color:white;
             }
             &.selected{
-              transition: all ease .5s;
+              transition: all ease .7s;
               background: black;
               color: white  ;
             }
@@ -210,4 +210,7 @@
       }
     }
   }
+}
+.hide{
+  display: none !important
 }
