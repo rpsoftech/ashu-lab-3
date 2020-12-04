@@ -14,9 +14,9 @@ export interface CommunicatinMSG {
   data?: {
     [key: string]: any;
   };
-  dataArray?:{
+  dataArray?: {
     [key: string]: string[];
-  }
+  };
 }
 @Injectable({
   providedIn: 'root',
@@ -30,11 +30,13 @@ export class SocketService {
   path: typeof path;
   ServerRespoObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
   ServerSendObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
-  private host: string='192.168.1.74';
-  private port=5000;
+  private host: string = '192.168.1.74';
+  private port = 5000;
   patharray: string[] = [];
   dirArrayObse: BehaviorSubject<string[]> = new BehaviorSubject<string[]>(null);
-  dirArrayObseSyncServer: BehaviorSubject<string[]> = new BehaviorSubject<string[]>(null);
+  dirArrayObseSyncServer: BehaviorSubject<string[]> = new BehaviorSubject<
+    string[]
+  >(null);
   private basicPath: string = '';
   name = '';
   private netObj: typeof net;
@@ -122,7 +124,7 @@ export class SocketService {
       }
     );
   }
-  setObsevableLisnet(): void {
+  private setObsevableLisnet(): void {
     this.ServerRespoObse.subscribe(async (c) => {
       if (c.type === -1) {
         this.swal
@@ -164,10 +166,9 @@ export class SocketService {
         this.deleteFolderRecursive(
           this.path.join(this.basicPath, c.data.watch, c.data.path)
         );
-      }else if (c.type === 51) {
+      } else if (c.type === 51) {
         this.dirArrayObseSyncServer.next(c.msg as any);
-      }
-       else if (c.type === 5) {
+      } else if (c.type === 5) {
         this.dirArrayObse.next(c.dataArray.dir);
       } else if (c.type === 1 || c.type === 4 || c.type === 3 || c.type === 2) {
         this.swal.fire('Success', c.msg, 'success');
@@ -200,7 +201,7 @@ export class SocketService {
             {
               title: 'Please Enter Host Name.',
               text: 'Enter The Host Name To Connect',
-             },
+            },
             {
               title: 'Please Enter Port Number.',
               text: 'Enter The Port Number To Connect',
@@ -214,7 +215,9 @@ export class SocketService {
           this.port = +result.value[1];
         }
       }
-      this.socket.connect(5000,'192.168.1.74', () => {}).once('error',console.log);
+      this.socket
+        .connect(5000, '192.168.1.74', () => {})
+        .once('error', console.log);
       const t = setTimeout(() => {
         this.swal.fire('Error', 'Something went Wrong', 'error').then(() => {
           this.DestroyObj();
@@ -265,7 +268,7 @@ export class SocketService {
         });
       }
       await this.ServerRespoObse.pipe(first()).toPromise();
-      await this.GetAndUpdateArray();
+       await this.GetAndUpdateArray();
       this.GetAndUpdateArrayLab1();
       // this.socket.connect(5000, 'localhost', () => {
       //   console.log('asdasd');
@@ -314,24 +317,16 @@ export class SocketService {
     this.GetAndUpdateArrayLab1();
   }
   async GetAndUpdateArray(): Promise<void> {
-    
     this.ServerSendObse.next({
       type: 51,
       msg: '',
     });
-    const l = await this.ServerRespoObse.pipe(first()).toPromise(); 
-    
-      this.dirArrayObseSyncServer.next(
-        l.msg as any
-      )
   }
-  async GetAndUpdateArrayLab1(){
+  async GetAndUpdateArrayLab1() {
     this.ServerSendObse.next({
       type: 5,
-      msg: this.patharray.length > 0 ? this.patharray.join(this.path.sep):'',
+      msg: this.patharray.length > 0 ? this.patharray.join(this.path.sep) : '',
     });
-    const l = await this.ServerRespoObse.pipe(first()).toPromise(); 
-      this.dirArrayObse.next(l.dataArray.dir)
   }
   async DeSync(p: string): Promise<void> {
     this.ServerSendObse.next({
@@ -343,7 +338,7 @@ export class SocketService {
   }
   async AddToSync(p: string): Promise<void> {
     const p1 = this.path.join(this.basicPath, p);
-    this.deleteFolderRecursive(p1)
+    this.deleteFolderRecursive(p1);
     this.createDir(p1);
     this.ServerSendObse.next({
       type: 11,
@@ -351,7 +346,7 @@ export class SocketService {
     });
     await this.ServerRespoObse.pipe(first()).toPromise();
     this.ServerSendObse.next({
-      type: 51,
+      type: 61,
       msg: p,
     });
     const a = await this.ServerRespoObse.pipe(first()).toPromise();

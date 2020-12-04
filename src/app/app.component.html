@@ -18,7 +18,7 @@
         <span>Path:</span>
       </div>
       <div class="path_list">
-        <span class="path_name" (click)="PathClicked(-1)" > / </span>
+        <span class="path_name" (click)="PathClicked(-1)"> / </span>
         <span class="next">></span>
         <span *ngFor="let path of socketservice.patharray; let i = index">
           <span class="path_name" (click)="PathClicked(i)">
@@ -28,11 +28,23 @@
         </span>
       </div>
     </div>
-        <div class="choice_buttons">
-          <div class="but" (click)="syncServer = true" [class.selected]="syncServer">Sync Server</div>
-          <div class="but" (click)="syncServer = false" [class.selected]="!syncServer" >Dir Server</div>
-        </div>
-    <div class="folder_container" [class.hide]="syncServer == false">
+    <div class="choice_buttons">
+      <div
+        class="but"
+        (click)="syncServer = true"
+        [class.selected]="syncServer"
+      >
+        Sync Server
+      </div>
+      <div
+        class="but"
+        (click)="syncServer = false"
+        [class.selected]="!syncServer"
+      >
+        Dir Server
+      </div>
+    </div>
+    <div class="folder_container" [class.hide]="syncServer === false">
       <div class="dir_list">
         <div class="no_dir" *ngIf="dirArraySync.length === 0">
           <img src="./assets/folder-svgrepo-com.svg" />
@@ -83,7 +95,7 @@
         </div>
       </div>
     </div>
-    <div class="folder_container" [class.hide]="syncServer == true">
+    <div class="folder_container" [class.hide]="syncServer === true">
       <div class="dir_list">
         <div class="no_dir" *ngIf="dirArray.length === 0">
           <img src="./assets/folder-svgrepo-com.svg" />

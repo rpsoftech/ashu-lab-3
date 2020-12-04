@@ -72,7 +72,10 @@ export class AppComponent {
       });
   }
   singleClick(d: string) {
+    console.log(NgZone.isInAngularZone());
     this.selected = this.selected === d ? '' : d;
+    this.show = this.selected === '' ? false:true;
+
     // this.cd.detectChanges();
   }
   doubleselectDir(a: string) {
