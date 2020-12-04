@@ -30,13 +30,14 @@ export class SocketService {
   path: typeof path;
   ServerRespoObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
   ServerSendObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
-  private host: string = '192.168.1.74';
-  private port = 5000;
+  private host: string;
+  private port:number;
   patharray: string[] = [];
   dirArrayObse: BehaviorSubject<string[]> = new BehaviorSubject<string[]>(null);
   dirArrayObseSyncServer: BehaviorSubject<string[]> = new BehaviorSubject<
     string[]
   >(null);
+  UndoTaskObse: BehaviorSubject<string[]> = new BehaviorSubject<string[]>(null);
   private basicPath: string = '';
   name = '';
   private netObj: typeof net;
@@ -53,6 +54,7 @@ export class SocketService {
     this.socket
       .on('data', (a) => {
         try {
+          console.log(a.toString());
           const c = JSON.parse(a.toString());
           console.log(c);
           this.ServerRespoObse.next(c);
@@ -173,6 +175,8 @@ export class SocketService {
       } else if (c.type === 1 || c.type === 4 || c.type === 3 || c.type === 2) {
         this.swal.fire('Success', c.msg, 'success');
         this.GetAndUpdateArrayLab1();
+      } else if (c.type === 101) {
+        this.UndoTaskObse.next(c.data as any);
       }
     });
   }
@@ -185,7 +189,7 @@ export class SocketService {
         }
         this.basicPath = a.filePaths[0];
       } else {
-        this.basicPath = '/Users/gusec/Desktop/test1';
+        this.basicPath = '/home/keyur/Desktop/test1';
       }
       console.log(this.basicPath);
 
@@ -216,7 +220,7 @@ export class SocketService {
         }
       }
       this.socket
-        .connect(5000, '192.168.1.74', () => {})
+        .connect(this.port, this.host, () => {})
         .once('error', console.log);
       const t = setTimeout(() => {
         this.swal.fire('Error', 'Something went Wrong', 'error').then(() => {
@@ -268,7 +272,8 @@ export class SocketService {
         });
       }
       await this.ServerRespoObse.pipe(first()).toPromise();
-       await this.GetAndUpdateArray();
+      this.GetAndUpdateArray();
+      await this.ServerRespoObse.pipe(first()).toPromise();
       this.GetAndUpdateArrayLab1();
       // this.socket.connect(5000, 'localhost', () => {
       //   console.log('asdasd');

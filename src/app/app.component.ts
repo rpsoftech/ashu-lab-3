@@ -9,10 +9,11 @@ export class AppComponent {
   selected = '';
   show = false;
   movePath = '';
-  syncServer=false;
+  syncServer = false;
   dirArray: string[] = [];
-  dirArraySync:string[] = [];
+  dirArraySync: string[] = [];
   watchDirArray: string[] = [];
+  UndoTaskArray: string[] = [];
   constructor(public socketservice: SocketService, private zone: NgZone) {
     socketservice.dirArrayObse.subscribe((a) => {
       if (a !== null) {
@@ -21,6 +22,14 @@ export class AppComponent {
           this.selected = '';
         });
         // this.cd.detectChanges();
+      }
+    });
+    socketservice.UndoTaskObse.subscribe((a) => {
+      if (a !== null) {
+        console.log(a);
+        zone.run(() => {
+          this.UndoTaskArray = a;
+        });
       }
     });
     socketservice.dirArrayObseSyncServer.subscribe((a) => {
@@ -33,16 +42,21 @@ export class AppComponent {
       }
     });
   }
-  PathClicked(i:number){
-    if(this.syncServer){
+  PathClicked(i: number) {
+    if (this.syncServer) {
       return;
     }
     this.socketservice.PathArrayClicked(i);
   }
-  refresh(){
-    if(this.syncServer){
+  UndoTask(){
+    this.socketservice.ServerSendObse.next({
+      type:101
+    });
+  }
+  refresh() {
+    if (this.syncServer) {
       this.socketservice.GetAndUpdateArray();
-    }else{
+    } else {
       this.socketservice.GetAndUpdateArrayLab1();
     }
   }
@@ -74,7 +88,7 @@ export class AppComponent {
   singleClick(d: string) {
     console.log(NgZone.isInAngularZone());
     this.selected = this.selected === d ? '' : d;
-    this.show = this.selected === '' ? false:true;
+    this.show = this.selected === '' ? false : true;
 
     // this.cd.detectChanges();
   }

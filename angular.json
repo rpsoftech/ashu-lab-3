@@ -17,7 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/client",
+            "outputPath": "electron/client",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -137,7 +137,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/server",
+            "outputPath": "electron/server",
             "index": "projects/server/src/index.html",
             "main": "projects/server/src/main.ts",
             "polyfills": "projects/server/src/polyfills.ts",

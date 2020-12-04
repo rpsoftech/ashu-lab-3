@@ -16,13 +16,13 @@ export interface CommunicatinMSG {
 export class ClientSock {
   private name = '';
   private timeOut: NodeJS.Timeout;
-  private msg: CommunicatinMSG = {
-    msg: '',
-    type: 0,
-  };
   private AlphanumericReg = new RegExp(
     '^[a-zA-Z0-9' + this.native.path.sep + this.native.path.sep + ']*$'
   );
+  private UndoTasks: {
+    type: number;
+    data: any;
+  }[] = [];
   constructor(
     private socket: Socket,
     private keysss: string,
@@ -121,163 +121,162 @@ export class ClientSock {
   private async dataFromClient(d: Buffer): Promise<void> {
     try {
       console.log(d.toString());
-
       const m: CommunicatinMSG = JSON.parse(d.toString());
-      if (m.type === 0) {
-        this.ValidateUserWithName(m.msg);
-      } else if (m.type === 11) {
-        const path = this.GetPath(m.msg, false);
-        this.AddRemoveWatcher('add', path);
-        this.WriteToUser({
-          type: m.type,
-          msg: 'ok',
-        });
-      } else if (m.type === 21) {
-        const path = this.GetPath(m.msg, false);
-        this.AddRemoveWatcher('delete', path);
-        this.WriteToUser({
-          type: m.type,
-          msg: 'ok',
-        });
-      } else if (m.type === 51 || m.type === 61) {
-        this.WriteToUser({
-          type: m.type,
-          msg: this.native.getDirectories(this.GetPath(m.msg, false)),
-        });
-      } else if (m.type === 1) {
-        console.log('Create:', this.name, ':', m.msg);
-        if (m.msg && this.ValidateDirName(m.msg)) {
-          const c = this.createDirIfNotExist(
-            this.GetPath(this.native.path.join(this.name, m.msg))
-          );
-          if (c) {
-            this.WriteToUser({
-              type: -2,
-              msg: 'Dir Already Exist..!!',
-            });
-          } else {
-            this.WriteToUser({ type: 1, msg: `${m.msg} Dir Created` });
-          }
-        } else {
-          this.WriteToUser({ type: -2, msg: 'Please Enter Valid Dir Name:' });
-        }
-      } else if (m.type === 4) {
-        //delete
-        if (m.msg && this.ValidateDirName(m.msg)) {
-          console.log('Delete:', this.name, ':', m.msg);
-          const a = this.native.fs.existsSync(this.GetPath(m.msg));
-          if (a) {
-            this.deleteFolderRecursive(this.GetPath(m.msg));
-            this.WriteToUser({ type: 4, msg: `${m.msg} Dir Deleted` });
-          } else {
-            this.WriteToUser({ type: -2, msg: `${m.msg} Dir Not Exist..!!` });
-          }
-        } else {
-          this.WriteToUser({ type: -2, msg: 'Please Enter Valid Dir Name:' });
-        }
-      } else if (m.type === 2) {
-        try {
-          //Move Dir
-          if (typeof m.data === 'undefined') {
-            throw new Error('Please Enter All Required Details');
-          }
-          if (
-            typeof m.data.source === 'undefined' ||
-            this.ValidateDirName(m.data.source) === false
-          ) {
-            throw new Error('Please Enter Sorce Dir Name');
-          } else if (
-            this.native.fs.existsSync(this.GetPath(m.data.source)) === false
-          ) {
-            throw new Error('Please Sorce Dir Not Exist');
-          }
-          if (
-            typeof m.data.target === 'undefined' ||
-            this.ValidateDirName(m.data.target) === false
-          ) {
-            throw new Error('Please Enter Target Dir Name');
-          } else if (
-            this.native.fs.existsSync(this.GetPath(m.data.source)) === false
-          ) {
-            throw new Error('Please Target Dir Not Exist');
-          }
-          const s = m.data.source.split(this.native.path.sep);
-          const t = this.GetPath(m.data.target).split(this.native.path.sep);
-          t[t.length] = s[s.length - 1];
-          // For Moving Dir Just Changing Path Of the Folder
-          this.native.fs.renameSync(
-            this.GetPath(m.data.source),
-            this.native.path.join('/',...t)
-          );
-          this.WriteToUser({
-            type: 2,
-            msg: `${m.data.source} Successfully Moved to ${m.data.target}`,
-          });
-        } catch (e) {
-          this.WriteToUser({
-            type: -2,
-            msg: e.message ? e.message : 'Something Went Wrong',
-          });
-        }
-      } else if (m.type === 3) {
-        try {
-          //Rename
-          if (typeof m.data === 'undefined') {
-            throw new Error('Please Enter All Required Details');
-          }
-          if (
-            typeof m.data.source === 'undefined' ||
-            this.ValidateDirName(m.data.source) === false
-          ) {
-            throw new Error('Please Enter Sorce Dir Name');
-          } else if (
-            this.native.fs.existsSync(this.GetPath(m.data.source)) === false
-          ) {
-            throw new Error('Please Sorce Dir Not Exist');
-          }
-          if (
-            typeof m.data.target === 'undefined' ||
-            this.ValidateDirName(m.data.target) === false
-          ) {
-            throw new Error('Please Enter Target Dir Name');
-          } else if (
-            this.native.fs.existsSync(this.GetPath(m.data.source)) === false
-          ) {
-            throw new Error('Please Target Dir Not Exist');
-          }
-          let s = this.GetPath(m.data.source).split(this.native.path.sep);
-          const t = m.data.target.split(this.native.path.sep);
-          s[s.length - 1] = t[t.length - 1];
-          s = s.filter(a=>a !== '');
-          this.native.fs.renameSync(
-            this.GetPath(m.data.source),
-            this.native.path.join('/',...s)
-          );
-          this.WriteToUser({
-            type: 3,
-            msg: `${m.data.source} Successfully Renamed to ${m.data.target}`,
-          });
-        } catch (e) {
-          this.WriteToUser({
-            type: -2,
-            msg: e.message ? e.message : 'Something Went Wrong',
-          });
-        }
-      } else if (m.type === 5) {
-        m.dataArray = {
-          dir: this.getDirectories(
-            this.native.path.join(GlobalData.dirPath, this.name, m.msg)
-          ),
-        };
-        this.socket.write(JSON.stringify(m));
-      }
+      this.HandleMsgs(m);
     } catch (e) {
       this.WriteToUser({
         type: -2,
         msg: 'Something Went Wrong ' + e.message ? e.message : '' + '...!!',
       });
-      console.log(e);
     }
+  }
+  private HandleMsgs(m: CommunicatinMSG, push = true) {
+    if (m.type === 0) {
+      this.ValidateUserWithName(m.msg);
+    } else if (m.type === 11) {
+      const path = this.GetPath(m.msg, false);
+      this.AddRemoveWatcher('add', path);
+      this.WriteToUser({
+        type: m.type,
+        msg: 'ok',
+      });
+    } else if (m.type === 21) {
+      const path = this.GetPath(m.msg, false);
+      this.AddRemoveWatcher('delete', path);
+      this.WriteToUser({
+        type: m.type,
+        msg: 'ok',
+      });
+    } else if (m.type === 51 || m.type === 61) {
+      this.WriteToUser({
+        type: m.type,
+        msg: this.native.getDirectories(this.GetPath(m.msg, false)),
+      });
+    } else if (m.type === 1) {
+      console.log('Create:', this.name, ':', m.msg);
+      if (m.msg && this.ValidateDirName(m.msg)) {
+        const c = this.createDirIfNotExist(this.GetPath(m.msg));
+        if (c) {
+          this.WriteToUser({
+            type: -2,
+            msg: 'Dir Already Exist..!!',
+          });
+        } else {
+          if (push) {
+            this.UndoTasks.push({
+              data: m.msg,
+              type: m.type,
+            });
+          }
+          this.WriteToUser({ type: 1, msg: `${m.msg} Dir Created` });
+        }
+      } else {
+        this.WriteToUser({ type: -2, msg: 'Please Enter Valid Dir Name:' });
+      }
+    } else if (m.type === 4) {
+      //delete
+      if (m.msg && this.ValidateDirName(m.msg)) {
+        console.log('Delete:', this.name, ':', m.msg);
+        const a = this.native.fs.existsSync(this.GetPath(m.msg));
+        if (a) {
+          const a1: string[] = [];
+          this.deleteFolderRecursive(this.GetPath(m.msg), a1);
+          this.WriteToUser({ type: 4, msg: `${m.msg} Dir Deleted` });
+          if (push) {
+            this.UndoTasks.push({
+              data: a1,
+              type: m.type,
+            });
+          }
+        } else {
+          this.WriteToUser({ type: -2, msg: `${m.msg} Dir Not Exist..!!` });
+        }
+      } else {
+        this.WriteToUser({ type: -2, msg: 'Please Enter Valid Dir Name:' });
+      }
+    } else if (m.type === 2) {
+      if (this.MoveDir(m as any)) {
+        if (push) {
+          this.UndoTasks.push({
+            data: {
+              source: m.data.target,
+              target: m.data.source,
+            },
+            type: m.type,
+          });
+        }
+      }
+    } else if (m.type === 3) {
+      if (this.RenameDir(m as any)) {
+        if (push) {
+          this.UndoTasks.push({
+            data: {
+              source: m.data.target,
+              target: m.data.source,
+            },
+            type: m.type,
+          });
+        }
+      }
+    } else if (m.type === 5) {
+      m.dataArray = {
+        dir: this.getDirectories(
+          this.native.path.join(GlobalData.dirPath, this.name, m.msg)
+        ),
+      };
+      this.socket.write(JSON.stringify(m));
+    } else if (m.type === 101) {
+      try {
+        if (this.UndoTasks.length === 0) {
+          throw new Error('There Is No task');
+        }
+        const c = this.UndoTasks.pop();
+        if (c.type === 1) {
+          this.HandleMsgs(
+            {
+              type: 4,
+              msg: c.data,
+            },
+            false
+          );
+        } else if (c.type === 4) {
+          c.data.reverse().forEach((a) => {
+            this.createDirIfNotExist(a);
+          });
+          this.WriteToUser({ type: 1, msg: `${c.data[0]} Dir Created` });
+        } else if (c.type === 2) {
+          this.HandleMsgs(
+            {
+              type: 2,
+              msg: '',
+              data: c.data,
+            },
+            false
+          );
+        } else if (c.type === 3) {
+          this.HandleMsgs(
+            {
+              type: 3,
+              msg: '',
+              data: c.data,
+            },
+            false
+          );
+          // this.WriteToUser({ type: 1, msg: `${m.msg} Dir Created` });
+        }
+      } catch (e) {
+        this.WriteToUser({
+          type: -2,
+          msg: e.message ? e.message : 'Something Went Wrong',
+        });
+      }
+    }
+    setTimeout(() => {
+      this.WriteToUser({
+        type: 101,
+        data: this.UndoTasks,
+      });
+    },200);
   }
   private ValidateUserWithName(name: string): void {
     if (typeof GlobalData.clients[name] === 'undefined') {
@@ -319,6 +318,112 @@ export class ClientSock {
       })
     );
   }
+  private MoveDir(m: {
+    data: {
+      source: string;
+      target: string;
+    };
+    type: number;
+  }) {
+    try {
+      //Move Dir
+      if (typeof m.data === 'undefined') {
+        throw new Error('Please Enter All Required Details');
+      }
+      if (
+        typeof m.data.source === 'undefined' ||
+        this.ValidateDirName(m.data.source) === false
+      ) {
+        throw new Error('Please Enter Sorce Dir Name');
+      } else if (
+        this.native.fs.existsSync(this.GetPath(m.data.source)) === false
+      ) {
+        throw new Error('Please Sorce Dir Not Exist');
+      }
+      if (
+        typeof m.data.target === 'undefined' ||
+        this.ValidateDirName(m.data.target) === false
+      ) {
+        throw new Error('Please Enter Target Dir Name');
+      } else if (
+        this.native.fs.existsSync(this.GetPath(m.data.source)) === false
+      ) {
+        throw new Error('Please Target Dir Not Exist');
+      }
+      const s = m.data.source.split(this.native.path.sep);
+      const t = this.GetPath(m.data.target).split(this.native.path.sep);
+      t[t.length] = s[s.length - 1];
+      // For Moving Dir Just Changing Path Of the Folder
+      this.native.fs.renameSync(
+        this.GetPath(m.data.source),
+        this.native.path.join('/', ...t)
+      );
+      this.WriteToUser({
+        type: 2,
+        msg: `${m.data.source} Successfully Moved to ${m.data.target}`,
+      });
+      return true;
+    } catch (e) {
+      this.WriteToUser({
+        type: -2,
+        msg: e.message ? e.message : 'Something Went Wrong',
+      });
+      return false;
+    }
+  }
+  private RenameDir(m: {
+    data: {
+      source: string;
+      target: string;
+    };
+    type: number;
+  }) {
+    try {
+      //Rename
+      if (typeof m.data === 'undefined') {
+        throw new Error('Please Enter All Required Details');
+      }
+      if (
+        typeof m.data.source === 'undefined' ||
+        this.ValidateDirName(m.data.source) === false
+      ) {
+        throw new Error('Please Enter Sorce Dir Name');
+      } else if (
+        this.native.fs.existsSync(this.GetPath(m.data.source)) === false
+      ) {
+        throw new Error('Please Sorce Dir Not Exist');
+      }
+      if (
+        typeof m.data.target === 'undefined' ||
+        this.ValidateDirName(m.data.target) === false
+      ) {
+        throw new Error('Please Enter Target Dir Name');
+      } else if (
+        this.native.fs.existsSync(this.GetPath(m.data.source)) === false
+      ) {
+        throw new Error('Please Target Dir Not Exist');
+      }
+      let s = this.GetPath(m.data.source).split(this.native.path.sep);
+      const t = m.data.target.split(this.native.path.sep);
+      s[s.length - 1] = t[t.length - 1];
+      s = s.filter((a) => a !== '');
+      this.native.fs.renameSync(
+        this.GetPath(m.data.source),
+        this.native.path.join('/', ...s)
+      );
+      this.WriteToUser({
+        type: 3,
+        msg: `${m.data.source} Successfully Renamed to ${m.data.target}`,
+      });
+      return true;
+    } catch (e) {
+      this.WriteToUser({
+        type: -2,
+        msg: e.message ? e.message : 'Something Went Wrong',
+      });
+      return false;
+    }
+  }
   private GetPath(dir: string, addname = true): string {
     return this.native.path.join(
       GlobalData.dirPath,
@@ -326,7 +431,7 @@ export class ClientSock {
       dir
     );
   }
-  private deleteFolderRecursive(path: string) {
+  private deleteFolderRecursive(path: string, a: string[]) {
     if (this.native.fs.existsSync(path)) {
       this.native.fs.readdirSync(path).forEach((file) => {
         // Get Full Path
@@ -334,14 +439,16 @@ export class ClientSock {
         // Check If It is Dir
         if (this.native.fs.lstatSync(curPath).isDirectory()) {
           // recurse
-          this.deleteFolderRecursive(curPath);
+          this.deleteFolderRecursive(curPath, a);
         } else {
           // delete file
           this.native.fs.unlinkSync(curPath);
+          a.push(curPath);
         }
       });
       // Delete Empty Dir
       this.native.fs.rmdirSync(path);
+      a.push(path);
     }
   }
   private isDirectory(source: string) {

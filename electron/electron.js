@@ -12,7 +12,7 @@ function createWindow() {
     center: true,
     // minimizable:false,
     // maximizable:false,
-    // frame: false,
+    frame: false,
     // titleBarStyle:"default",
     webPreferences: {
       nodeIntegration: true, // is default value after Electron v5
@@ -34,9 +34,9 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     if(server){
-      mainWindow.loadFile(path.join(__dirname, "servergui/index.html"));
+      mainWindow.loadFile(path.join(__dirname, "server/index.html"));
     }else{
-      mainWindow.loadFile(path.join(__dirname, "www/index.html"));
+      mainWindow.loadFile(path.join(__dirname, "client/index.html"));
     }
   }
 }

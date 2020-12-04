@@ -125,7 +125,7 @@ export class ServerService {
       if (this.ServerStarted === false) {
         this.server = this.native.netObj
           .createServer((s) => this.OnClientConnect(s))
-          .listen(5000,'192.168.1.74',() => {
+          .listen(5000,() => {
             console.log('started');
             this.ServerStarted = true;
             resolve();

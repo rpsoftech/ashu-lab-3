@@ -132,6 +132,9 @@
         <div class="move_path" [hidden]="movePath === ''">
           selected dir path:- /{{ movePath }}
         </div>
+        <div class="undobuttom" (click)="UndoTask()" [hidden]="UndoTaskArray.length === 0">
+          <button>Undo: {{UndoTaskArray.length}}</button>
+        </div>
       </div>
     </div>
   </div>
