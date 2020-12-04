@@ -19,7 +19,7 @@
     }
 
     .path_container {
-      flex: 1;
+      flex: 0.5;
       position: relative;
       padding-left: 15px;
       padding-top: 15px;
@@ -39,6 +39,29 @@
         }
       }
     }
+        .choice_buttons{
+          display: flex;
+          justify-content: space-evenly;
+          .but{
+            box-sizing: border-box;
+            border: 1px solid;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            &:hover{
+              transition: all ease .5s;
+              background: black;
+              color:white;
+            }
+            &.selected{
+              transition: all ease .5s;
+              background: black;
+              color: white  ;
+            }
+          }
+        }
     .folder_container {
       flex: 9;
       border: 1px solid;

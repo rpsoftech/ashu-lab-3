@@ -4,19 +4,20 @@
       <div class="cancel" (click)="close()">
         <img src="./assets/cancel.svg" />
       </div>
-      <div class="header">Welcome to Dir Server {{ socketservice.name }}..!!</div>
+      <div class="header">
+        Welcome to Dir Server {{ socketservice.name }}..!!
+      </div>
       <div class="border"></div>
     </div>
     <div class="path_container">
       <div class="refresh" (click)="socketservice.GetAndUpdateArray()">
         <span>Refresh List:</span>
-        <img src="./assets/refresh.svg"/>
+        <img src="./assets/refresh.svg" />
       </div>
       <div style="display: inline-block">
         <span>Path:</span>
       </div>
       <div class="path_list">
-  
         <span class="path_name"> / </span>
         <span class="next">></span>
         <span *ngFor="let path of socketservice.patharray; let i = index">
@@ -26,8 +27,11 @@
           <span class="next">></span>
         </span>
       </div>
-      
     </div>
+        <div class="choice_buttons">
+          <div class="but" (click)="syncServer = true" [class.selected]="syncServer">Sync Server</div>
+          <div class="but" (click)="syncServer = false" [class.selected]="!syncServer" >Dir Server</div>
+        </div>
     <div class="folder_container">
       <div class="dir_list">
         <div class="no_dir" *ngIf="dirArray.length === 0">
@@ -81,3 +85,4 @@
     </div>
   </div>
 </div>
+ 

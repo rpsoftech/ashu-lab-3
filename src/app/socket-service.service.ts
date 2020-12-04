@@ -30,7 +30,7 @@ export class SocketService {
   path: typeof path;
   ServerRespoObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
   ServerSendObse: Subject<CommunicatinMSG> = new Subject<CommunicatinMSG>();
-  private host: string='localhost';
+  private host: string='192.168.1.74';
   private port: string='5000';
   patharray: string[] = [];
   dirArrayObse: BehaviorSubject<string[]> = new BehaviorSubject<string[]>(null);
@@ -185,7 +185,7 @@ export class SocketService {
             {
               title: 'Please Enter Host Name.',
               text: 'Enter The Host Name To Connect',
-            },
+             },
             {
               title: 'Please Enter Port Number.',
               text: 'Enter The Port Number To Connect',
@@ -199,10 +199,10 @@ export class SocketService {
           this.port = result.value[1];
         }
       }
-      this.socket.connect(this.port as any, this.host, () => {});
+      this.socket.connect(5000,'192.168.1.74', () => {}).once('error',console.log);
       const t = setTimeout(() => {
         this.swal.fire('Error', 'Something went Wrong', 'error').then(() => {
-          this.DestroyObj();
+          // this.DestroyObj();
         });
       }, 11000);
       const c = await this.ServerRespoObse.pipe(first()).toPromise();
