@@ -8,6 +8,7 @@ import { SocketService } from './socket-service.service';
 export class AppComponent {
   selected = '';
   show = false;
+  syncServer=false;
   dirArray: string[] = [];
   watchDirArray: string[] = [];
   constructor(public socketservice: SocketService, private zone: NgZone) {
